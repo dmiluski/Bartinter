@@ -67,14 +67,22 @@ public final class Bartinter: UIViewController {
     private func calculateStatusBarAreaAvgLuminance(_ completion: @escaping (CGFloat) -> Void) {
         let scale: CGFloat = 0.5
         let size = UIApplication.shared.statusBarFrame.size
+        
         getLayer { [weak self] layer in
-            self?.throttler.throttle {
+            self?.throttler.throttle { [weak layer] in
+                guard let layer = layer else { return }
+                
                 UIGraphicsBeginImageContextWithOptions(size, false, scale)
+                
                 guard let context = UIGraphicsGetCurrentContext() else { return }
+                
                 layer.render(in: context)
                 let image = UIGraphicsGetImageFromCurrentImageContext()
+                
                 guard let averageLuminance = image?.averageLuminance else { return }
+                
                 UIGraphicsEndImageContext()
+                
                 DispatchQueue.main.async {
                     completion(averageLuminance)
                 }
